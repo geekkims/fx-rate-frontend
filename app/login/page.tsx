@@ -22,13 +22,19 @@ export default function LoginPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault(); setError(''); setLoading(true)
+    console.log('[login] API base URL:', process.env.NEXT_PUBLIC_API_URL)
+    console.log('[login] posting to /login with:', form)
     try {
       const res = await api.post('/login', form)
+      console.log('[login] success:', res.status, res.data)
       localStorage.setItem('token', res.data.token)
       localStorage.setItem('user', JSON.stringify(res.data.user))
       router.push('/dashboard')
-    } catch { setError('Invalid username or password') }
-    finally   { setLoading(false) }
+    } catch (err: unknown) {
+      const e = err as { response?: { status: number; data: unknown }; message?: string }
+      console.error('[login] error — status:', e?.response?.status, 'body:', e?.response?.data, 'msg:', e?.message)
+      setError('Invalid username or password')
+    } finally { setLoading(false) }
   }
 
   return (
